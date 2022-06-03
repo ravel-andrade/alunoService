@@ -3,17 +3,19 @@ package com.db.alunoService.service;
 import com.db.alunoService.model.StudentEntity;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class StudentService {
     public Map<Double, List<StudentEntity>> getStudentsPerGrade(List<StudentEntity> students){
         Map<Double, List<StudentEntity>> studentsPerGrade = new HashMap<>();
-        for (StudentEntity studentEntity : students) {
+        students.stream().forEach(studentEntity -> {
             if(studentsPerGrade.get(studentEntity.getNota()) == null){
-                addStudentForNewGrade(studentsPerGrade, studentEntity);
-            }else{
-                addStudentForExistingGrade(studentsPerGrade, studentEntity);
+                List<StudentEntity> studentsWithSameGrade = students.stream()
+                        .filter(student -> student.getNota().equals(studentEntity.getNota()))
+                        .collect(Collectors.toList());
+                studentsPerGrade.put(studentEntity.getNota(), studentsWithSameGrade);
             }
-        }
+        });
         return studentsPerGrade;
     }
 
@@ -23,15 +25,5 @@ public class StudentService {
         setStudents.addAll(studentsFromController);
         students.addAll(setStudents);
         return students;
-    }
-
-    private void addStudentForExistingGrade(Map<Double, List<StudentEntity>> studentsPerGrade, StudentEntity studentEntity) {
-        studentsPerGrade.get(studentEntity.getNota()).add(studentEntity);
-    }
-
-    private void addStudentForNewGrade(Map<Double, List<StudentEntity>> studentsPerGrade, StudentEntity studentEntity) {
-        List<StudentEntity> newEntry = new ArrayList<>();
-        newEntry.add(studentEntity);
-        studentsPerGrade.put(studentEntity.getNota(), newEntry);
     }
 }
